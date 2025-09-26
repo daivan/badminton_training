@@ -201,6 +201,7 @@ function stopTraining() {
 function showResult() {
   document.getElementById("training").classList.add("hidden");
   document.getElementById("result").classList.remove("hidden");
+  document.getElementById("calendar-container").classList.add("hidden"); // Hide calendar on result screen
   document.getElementById("corner-visual").classList.add("hidden"); // Ensure visual cue is hidden
   const minutes = totalTime / 60;
   document.getElementById("result-text").innerText = `Du körde i ${minutes} minut(er) och träffade ${cornersCalled} hörn.`;
