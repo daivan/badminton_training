@@ -7,24 +7,49 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
-.DS_Store
-dist
-dist-ssr
-coverage
-*.local
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
 
-/cypress/videos/
-/cypress/screenshots/
+# Build output
+/dist
+/dist-ssr
+/build
+/out
+/output
+.vitepress/cache/
+.vitepress/dist/
 
-# Editor directories and files
+# Environment variables
+.env
+.env.*.local
+
+# IDEs and editors
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.bak
+*.DS_Store
+Thumbs.db
 
+# Test coverage
+/coverage
+
+# TypeScript cache
 *.tsbuildinfo
+
+# VSCode local history
+.history/
+
+# Other
+*.tgz
+.npmrc
+.yarnrc
+.yarn-integrity
