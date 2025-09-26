@@ -1,56 +1,13 @@
 <!DOCTYPE html>
-<html lang="sv">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Badminton Split Step</title>
-  <link rel="stylesheet" href="main.css">
-</head>
-<body>
-
-  <!-- Meny -->
-  <div id="menu">
-    <h1>Badminton Split Step</h1>
-
-    <label for="minutes">Träningstid (minuter):</label>
-    <input type="number" id="minutes" value="1" min="1" max="30"><br><br>
-
-    <h3>Välj hörn:</h3>
-    <label><input type="checkbox" value="Fram vänster" checked> Fram vänster</label><br>
-    <label><input type="checkbox" value="Fram höger" checked> Fram höger</label><br>
-    <label><input type="checkbox" value="Bak vänster" checked> Bak vänster</label><br>
-    <label><input type="checkbox" value="Bak höger" checked> Bak höger</label><br><br>
-
-    <button onclick="startTraining()">Starta träning</button>
-
-    <div id="stats">
-      <h3>Statistik</h3>
-      <p>Totala hörn: <span id="total-corners">0</span></p>
-      <p>Personbästa (session): <span id="personal-best">0</span></p>
-    </div>
-  </div>
-
-  <!-- Träning -->
-  <div id="training" class="hidden">
-    <h2 id="time-left"></h2>
-    <div id="corner-visual" class="corner-visual hidden"></div>
-    <div id="display" class="big-number">3</div>
-    <button onclick="stopTraining()">Avbryt</button>
-  </div>
-
-  <!-- Resultat -->
-  <div id="result" class="hidden">
-    <h1>Bra jobbat! 🎉</h1>
-    <p id="result-text"></p>
-    <button onclick="goToMenu()">Tillbaka till menyn</button>
-  </div>
-
-  <script src="main.js"></script>
-
-  <!-- Kalender -->
-  <div id="calendar-container" class="hidden"></div>
-
-</body>
-<audio id="countdown-beep" src="sounds/beep.wav" preload="auto"></audio>
-<audio id="corner-sound" src="sounds/whoosh.wav" preload="auto"></audio>
+<html lang="">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vite App</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>
