@@ -25,7 +25,7 @@ input[type="number"] {
   width: 80px; /* Adjust width for better mobile fit */
 }
 
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 .big-number {
   font-size: 120px; /* Significantly larger for mobile display */

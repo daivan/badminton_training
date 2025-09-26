@@ -6,6 +6,21 @@ const PERSONAL_BEST_KEY = 'badmintonPersonalBest';
 
 let countdownBeep, cornerSound;
 
+function showView(viewId) {
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("training").classList.add("hidden");
+  document.getElementById("result").classList.add("hidden");
+  document.getElementById("calendar-container").classList.add("hidden");
+  document.getElementById("corner-visual").classList.add("hidden"); // Always hide corner visual when switching views
+
+  document.getElementById(viewId).classList.remove("hidden");
+
+  // Special handling for calendar visibility when showing the menu
+  if (viewId === "menu") {
+    document.getElementById("calendar-container").classList.remove("hidden");
+  }
+}
+
 function updateStatsDisplay() {
   document.getElementById('total-corners').innerText = `Totalt antal hörn: ${getTotalCorners()}`;
   document.getElementById('personal-best').innerText = `Personbästa: ${getPersonalBest()} hörn`;
@@ -137,9 +152,7 @@ function startTraining() {
   }
 
   // Byt vy
-  document.getElementById("menu").classList.add("hidden");
-  document.getElementById("training").classList.remove("hidden");
-  document.getElementById("calendar-container").classList.add("hidden");
+  showView("training");
   document.getElementById("corner-visual").classList.add("hidden"); // Hide visual cue initially
 
   // Starta träningen
@@ -199,9 +212,7 @@ function stopTraining() {
 }
 
 function showResult() {
-  document.getElementById("training").classList.add("hidden");
-  document.getElementById("result").classList.remove("hidden");
-  document.getElementById("calendar-container").classList.add("hidden"); // Hide calendar on result screen
+  showView("result");
   document.getElementById("corner-visual").classList.add("hidden"); // Ensure visual cue is hidden
   const minutes = totalTime / 60;
   document.getElementById("result-text").innerText = `Du körde i ${minutes} minut(er) och träffade ${cornersCalled} hörn.`;
@@ -211,9 +222,7 @@ function showResult() {
 }
 
 function goToMenu() {
-  document.getElementById("result").classList.add("hidden");
-  document.getElementById("menu").classList.remove("hidden");
-  document.getElementById("calendar-container").classList.remove("hidden");
+  showView("menu");
   document.getElementById("corner-visual").classList.add("hidden"); // Ensure visual cue is hidden
   updateStatsDisplay(); // Update stats when returning to menu
 }
