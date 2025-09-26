@@ -22,12 +22,19 @@
     <label><input type="checkbox" value="Bak höger" checked> Bak höger</label><br><br>
 
     <button onclick="startTraining()">Starta träning</button>
+
+    <div id="stats">
+      <h3>Statistik</h3>
+      <p>Totala hörn: <span id="total-corners">0</span></p>
+      <p>Personbästa (session): <span id="personal-best">0</span></p>
+    </div>
   </div>
 
   <!-- Träning -->
   <div id="training" class="hidden">
     <h2 id="time-left"></h2>
     <div id="display" class="big-number">3</div>
+    <div id="corner-visual" class="corner-visual hidden"></div>
     <button onclick="stopTraining()">Avbryt</button>
   </div>
 
@@ -44,4 +51,6 @@
   <div id="calendar-container" class="hidden"></div>
 
 </body>
+<audio id="countdown-beep" src="sounds/beep.wav" preload="auto"></audio>
+<audio id="corner-sound" src="sounds/whoosh.wav" preload="auto"></audio>
 </html>

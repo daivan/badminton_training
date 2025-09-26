@@ -1,10 +1,42 @@
-let totalTime, timeLeft, countdown, corners, timerInterval;
+let totalTime, timeLeft, countdown, corners, timerInterval, cornersCalled = 0;
 let isShowingCorner = false;
 const RUN_DATES_KEY = 'badmintonRunDates';
+const TOTAL_CORNERS_KEY = 'badmintonTotalCorners';
+const PERSONAL_BEST_KEY = 'badmintonPersonalBest';
+
+let countdownBeep, cornerSound;
+
+function updateStatsDisplay() {
+  document.getElementById('total-corners').innerText = `Totalt antal hörn: ${getTotalCorners()}`;
+  document.getElementById('personal-best').innerText = `Personbästa: ${getPersonalBest()} hörn`;
+}
 
 document.addEventListener('DOMContentLoaded', (event) => {
+  countdownBeep = document.getElementById('countdown-beep');
+  cornerSound = document.getElementById('corner-sound');
+
+  // Add error listeners to audio elements
+  countdownBeep.addEventListener('error', (e) => {
+    console.error('Error loading countdownBeep audio:', e);
+    console.error('Audio element src:', countdownBeep.src);
+  });
+  cornerSound.addEventListener('error', (e) => {
+    console.error('Error loading cornerSound audio:', e);
+    console.error('Audio element src:', cornerSound.src);
+  });
   renderCalendar();
+  updateStatsDisplay();
 });
+
+function getCornerClass(cornerName) {
+  switch (cornerName) {
+    case "Fram vänster": return "front-left";
+    case "Fram höger": return "front-right";
+    case "Bak vänster": return "back-left";
+    case "Bak höger": return "back-right";
+    default: return "";
+  }
+}
 
 function getRunDates() {
   const dates = localStorage.getItem(RUN_DATES_KEY);
@@ -16,6 +48,26 @@ function addRunDate(date) {
   dates.add(date);
   localStorage.setItem(RUN_DATES_KEY, JSON.stringify(Array.from(dates)));
   renderCalendar();
+}
+
+function getTotalCorners() {
+  return parseInt(localStorage.getItem(TOTAL_CORNERS_KEY) || '0');
+}
+
+function updateTotalCorners(newCorners) {
+  const currentTotal = getTotalCorners();
+  localStorage.setItem(TOTAL_CORNERS_KEY, (currentTotal + newCorners).toString());
+}
+
+function getPersonalBest() {
+  return parseInt(localStorage.getItem(PERSONAL_BEST_KEY) || '0');
+}
+
+function updatePersonalBest(currentSessionCorners) {
+  const currentPersonalBest = getPersonalBest();
+  if (currentSessionCorners > currentPersonalBest) {
+    localStorage.setItem(PERSONAL_BEST_KEY, currentSessionCorners.toString());
+  }
 }
 
 function renderCalendar() {
@@ -73,6 +125,7 @@ function startTraining() {
   const minutes = parseInt(document.getElementById("minutes").value) || 1;
   totalTime = minutes * 60;
   timeLeft = totalTime;
+  cornersCalled = 0; // Reset corners called for new session
 
   // Läs in hörn
   const checkboxes = document.querySelectorAll('input[type=checkbox]:checked');
@@ -87,6 +140,7 @@ function startTraining() {
   document.getElementById("menu").classList.add("hidden");
   document.getElementById("training").classList.remove("hidden");
   document.getElementById("calendar-container").classList.add("hidden");
+  document.getElementById("corner-visual").classList.add("hidden"); // Hide visual cue initially
 
   // Starta träningen
   countdown = 3;
@@ -104,21 +158,30 @@ function trainingLoop() {
 
   if (!isShowingCorner) {
     // Räknar ner
-    if (countdown > 1) {
+    if (countdown > 0) {
       countdown--;
       document.getElementById("display").innerText = countdown;
+      if (countdown >= 0) { // Play beep for 3, 2, 1, and 0 (before corner appears)
+        countdownBeep.play();
+      }
     } else {
       // Visa hörn
       const corner = corners[Math.floor(Math.random() * corners.length)];
-      document.getElementById("display").innerText = corner;
-      document.getElementById("display").className = "corner";
+      document.getElementById("display").classList.add("hidden"); // Hide text display
+      const cornerVisual = document.getElementById("corner-visual");
+      cornerVisual.classList.remove("hidden");
+      cornerVisual.className = `corner-visual ${getCornerClass(corner)}`; // Apply visual class
       isShowingCorner = true;
+      cornersCalled++; // Increment corners called
+      cornerSound.play();
     }
   } else {
     // Gå tillbaka till nedräkning
     countdown = 3;
     document.getElementById("display").innerText = countdown;
+    document.getElementById("display").classList.remove("hidden"); // Show text display
     document.getElementById("display").className = "big-number";
+    document.getElementById("corner-visual").classList.add("hidden"); // Hide visual cue
     isShowingCorner = false;
   }
 
@@ -138,13 +201,18 @@ function stopTraining() {
 function showResult() {
   document.getElementById("training").classList.add("hidden");
   document.getElementById("result").classList.remove("hidden");
+  document.getElementById("corner-visual").classList.add("hidden"); // Ensure visual cue is hidden
   const minutes = totalTime / 60;
-  document.getElementById("result-text").innerText = `Du körde i ${minutes} minut(er).`;
+  document.getElementById("result-text").innerText = `Du körde i ${minutes} minut(er) och träffade ${cornersCalled} hörn.`;
   addRunDate(new Date().toISOString().slice(0, 10)); // Add today's date as a run date
+  updateTotalCorners(cornersCalled);
+  updatePersonalBest(cornersCalled);
 }
 
 function goToMenu() {
   document.getElementById("result").classList.add("hidden");
   document.getElementById("menu").classList.remove("hidden");
   document.getElementById("calendar-container").classList.remove("hidden");
+  document.getElementById("corner-visual").classList.add("hidden"); // Ensure visual cue is hidden
+  updateStatsDisplay(); // Update stats when returning to menu
 }
