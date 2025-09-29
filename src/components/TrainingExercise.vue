@@ -1,6 +1,6 @@
 <template>
   <div class="training-exercise">
-    <h1 v-if="currentCountdown > 0" class="countdown">{{ currentCountdown }}</h1>
+    <h1 v-if="currentCountdown > 0" class="countdown">{{ formattedCurrentCountdown }}</h1>
     <h1 v-else-if="exerciseActive" class="call">{{ currentCall }}</h1>
     <h1 v-else>Training Complete!</h1>
     <div v-if="exerciseActive" class="session-countdown">Time Left: {{ formattedSessionCountdown }}</div>
@@ -11,6 +11,13 @@
 <script setup>
 import { ref, onMounted, onUnmounted, defineProps, defineEmits, computed } from 'vue';
 
+const formattedCurrentCountdown = computed(() => {
+  const totalMilliseconds = Math.max(0, currentCountdown.value);
+  const seconds = Math.floor(totalMilliseconds / 1000);
+  const milliseconds = Math.floor((totalMilliseconds % 1000) / 10);
+  return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
+});
+
 const props = defineProps({
   duration: {
     type: Number,
@@ -20,8 +27,8 @@ const props = defineProps({
 
 const emit = defineEmits(['end-training']);
 
-const currentCountdown = ref(3); // Countdown before exercise starts and before each call
-const sessionCountdown = ref(0); // Total seconds remaining for the training session
+const currentCountdown = ref(3000); // Countdown before exercise starts and before each call (in milliseconds)
+const sessionCountdown = ref(0); // Total milliseconds remaining for the training session
 const currentCall = ref('');
 const exerciseActive = ref(false);
 let countdownInterval = null; // Generic countdown interval
@@ -37,28 +44,28 @@ const calls = [
 let callIndex = 0;
 
 const startCountdown = (callback) => {
-  currentCountdown.value = 3;
+  currentCountdown.value = 3000; // Reset to 3 seconds in milliseconds
   countdownInterval = setInterval(() => {
-    currentCountdown.value--;
-    if (currentCountdown.value === 0) {
+    currentCountdown.value -= 10; // Decrement by 10 milliseconds
+    if (currentCountdown.value <= 0) { // Check if less than or equal to 0
       clearInterval(countdownInterval);
       if (callback) callback();
     }
-  }, 1000);
+  }, 10); // Update every 10 milliseconds
 };
 
 const startExercise = () => {
-  sessionCountdown.value = props.duration * 60; // Initialize session countdown in seconds
+  sessionCountdown.value = props.duration * 60 * 1000; // Initialize session countdown in milliseconds
 
   sessionCountdownInterval = setInterval(() => {
-    sessionCountdown.value--;
+    sessionCountdown.value -= 10; // Decrement by 10 milliseconds
     if (sessionCountdown.value <= 0) {
       clearInterval(sessionCountdownInterval);
       clearTimeout(exerciseLoopTimeout);
       exerciseActive.value = false;
       emit('end-training');
     }
-  }, 1000);
+  }, 10); // Update every 10 milliseconds
 
   const exerciseLoop = () => {
     if (sessionCountdown.value <= 0) return;
@@ -67,7 +74,7 @@ const startExercise = () => {
       if (sessionCountdown.value <= 0) return;
       currentCall.value = calls[callIndex];
       callIndex = (callIndex + 1) % calls.length;
-      exerciseLoopTimeout = setTimeout(exerciseLoop, 2000); // Display call for 2 seconds
+      exerciseLoopTimeout = setTimeout(exerciseLoop, 2000); // Display call for 2 seconds (2000 milliseconds)
     });
   };
 
@@ -91,9 +98,12 @@ onUnmounted(() => {
   clearTimeout(exerciseLoopTimeout);
 });
 const formattedSessionCountdown = computed(() => {
-  const minutes = Math.floor(sessionCountdown.value / 60);
-  const seconds = sessionCountdown.value % 60;
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  const totalMilliseconds = Math.max(0, sessionCountdown.value); // Ensure no negative values
+  const minutes = Math.floor(totalMilliseconds / (60 * 1000));
+  const seconds = Math.floor((totalMilliseconds % (60 * 1000)) / 1000);
+  const milliseconds = Math.floor((totalMilliseconds % 1000) / 10); // Get two digits for milliseconds
+
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
 });
 </script>
 
