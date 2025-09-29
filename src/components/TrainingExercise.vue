@@ -1,11 +1,10 @@
 <template>
   <div class="training-exercise">
     <h1 v-if="currentCountdown > 0" class="countdown">{{ currentCountdown }}</h1>
-    <h1 v-else-if="showJump" class="call">Jump!</h1>
     <h1 v-else-if="exerciseActive" class="call">{{ currentCall }}</h1>
     <h1 v-else>Training Complete!</h1>
     <div v-if="exerciseActive" class="session-countdown">Time Left: {{ formattedSessionCountdown }}</div>
-    <button v-if="!exerciseActive && currentCountdown === 0 && !showJump" @click="goBack">Go Back</button>
+    <button v-if="!exerciseActive && currentCountdown === 0" @click="goBack">Go Back</button>
   </div>
 </template>
 
@@ -22,7 +21,6 @@ const props = defineProps({
 const emit = defineEmits(['end-training']);
 
 const currentCountdown = ref(3); // Countdown before exercise starts and before each call
-const showJump = ref(false); // Controls the display of "Jump!"
 const sessionCountdown = ref(0); // Total seconds remaining for the training session
 const currentCall = ref('');
 const exerciseActive = ref(false);
@@ -40,16 +38,11 @@ let callIndex = 0;
 
 const startCountdown = (callback) => {
   currentCountdown.value = 3;
-  showJump.value = false;
   countdownInterval = setInterval(() => {
     currentCountdown.value--;
     if (currentCountdown.value === 0) {
       clearInterval(countdownInterval);
-      showJump.value = true;
-      setTimeout(() => {
-        showJump.value = false;
-        if (callback) callback();
-      }, 1000); // Display "Jump!" for 1 second
+      if (callback) callback();
     }
   }, 1000);
 };
