@@ -36,10 +36,10 @@ let sessionCountdownInterval = null;
 let exerciseLoopTimeout = null; // Timeout for the main exercise loop
 
 const calls = [
-  '/images/badminton_shots/short_forehand.png',
-  '/images/badminton_shots/short_backhand.png',
-  '/images/badminton_shots/late_forehand.png',
-  '/images/badminton_shots/late_backhand.png',
+  './images/badminton_shots/short_forehand.png',
+  './images/badminton_shots/short_backhand.png',
+  './images/badminton_shots/late_forehand.png',
+  './images/badminton_shots/late_backhand.png',
 ];
 let callIndex = 0;
 
