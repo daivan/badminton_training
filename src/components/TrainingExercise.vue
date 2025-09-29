@@ -1,7 +1,7 @@
 <template>
   <div class="training-exercise">
     <h1 v-if="currentCountdown > 0" class="countdown">{{ formattedCurrentCountdown }}</h1>
-    <h1 v-else-if="exerciseActive" class="call">{{ currentCall }}</h1>
+    <img v-else-if="exerciseActive" :src="currentCall" alt="Badminton Shot" class="call-image" />
     <h1 v-else>Training Complete!</h1>
     <div v-if="exerciseActive" class="session-countdown">Time Left: {{ formattedSessionCountdown }}</div>
     <button v-if="!exerciseActive && currentCountdown === 0" @click="goBack">Go Back</button>
@@ -36,10 +36,10 @@ let sessionCountdownInterval = null;
 let exerciseLoopTimeout = null; // Timeout for the main exercise loop
 
 const calls = [
-  'Short Forehand',
-  'Short Backhand',
-  'Late Forehand',
-  'Late Backhand',
+  '/images/badminton_shots/short_forehand.png',
+  '/images/badminton_shots/short_backhand.png',
+  '/images/badminton_shots/late_forehand.png',
+  '/images/badminton_shots/late_backhand.png',
 ];
 let callIndex = 0;
 
@@ -135,8 +135,10 @@ h1 {
   color: #ffc107;
 }
 
-.call {
-  color: #17a2b8;
+.call-image {
+  max-width: 80%;
+  max-height: 80vh;
+  object-fit: contain;
 }
 
 button {
