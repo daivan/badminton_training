@@ -44,7 +44,7 @@ const calls = [
 let callIndex = 0;
 
 const startCountdown = (callback) => {
-  currentCountdown.value = 3000; // Reset to 3 seconds in milliseconds
+  currentCountdown.value = 2000; // Reset to 3 seconds in milliseconds
   countdownInterval = setInterval(() => {
     currentCountdown.value -= 10; // Decrement by 10 milliseconds
     if (currentCountdown.value <= 0) { // Check if less than or equal to 0
