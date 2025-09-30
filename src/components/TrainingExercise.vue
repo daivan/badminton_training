@@ -1,7 +1,10 @@
 <template>
   <div class="training-exercise">
     <h1 v-if="currentCountdown > 0" class="countdown">{{ formattedCurrentCountdown }}</h1>
-    <img v-else-if="exerciseActive" :src="currentCall" alt="Badminton Shot" class="call-image" />
+    <template v-else-if="exerciseActive">
+      <div class="call-to-action">{{ callToActionText }}</div>
+      <img :src="currentCall" alt="Badminton Shot" class="call-image" />
+    </template>
     <h1 v-else>Training Complete!</h1>
     <div v-if="exerciseActive" class="session-countdown">Time Left: {{ formattedSessionCountdown }}</div>
     <button v-if="!exerciseActive && currentCountdown === 0" @click="goBack">Go Back</button>
@@ -30,6 +33,7 @@ const emit = defineEmits(['end-training']);
 const currentCountdown = ref(3000); // Countdown before exercise starts and before each call (in milliseconds)
 const sessionCountdown = ref(0); // Total milliseconds remaining for the training session
 const currentCall = ref('');
+const callToActionText = ref('');
 const exerciseActive = ref(false);
 let countdownInterval = null; // Generic countdown interval
 let sessionCountdownInterval = null;
@@ -42,6 +46,12 @@ const calls = [
   'https://daivan.github.io/badminton_training/images/badminton_shots/late_backhand.png',
 ];
 let callIndex = 0;
+
+const getRandomCallToAction = () => {
+  const actions = ["Return a drop", "Return a clear"];
+  const randomIndex = Math.floor(Math.random() * actions.length);
+  return actions[randomIndex];
+};
 
 const startCountdown = (callback) => {
   currentCountdown.value = 2000; // Reset to 3 seconds in milliseconds
@@ -73,6 +83,7 @@ const startExercise = () => {
     startCountdown(() => {
       if (sessionCountdown.value <= 0) return;
       currentCall.value = calls[callIndex];
+      callToActionText.value = getRandomCallToAction(); // Set the random call to action text
       callIndex = (callIndex + 1) % calls.length;
       exerciseLoopTimeout = setTimeout(exerciseLoop, 2000); // Display call for 2 seconds (2000 milliseconds)
     });
@@ -123,6 +134,13 @@ const formattedSessionCountdown = computed(() => {
 h1 {
   font-size: 5em;
   margin-bottom: 50px;
+}
+
+.call-to-action {
+  font-size: 3em;
+  color: #4CAF50; /* A nice green color */
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .session-countdown {
