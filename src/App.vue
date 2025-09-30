@@ -31,6 +31,11 @@ body {
   box-sizing: border-box;
 }
 
+html.dark-mode {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -38,5 +43,9 @@ body {
   text-align: center;
   color: #2c3e50;
   margin-top: 0;
+}
+
+html.dark-mode #app {
+  color: #f0f0f0;
 }
 </style>
