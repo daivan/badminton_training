@@ -45,7 +45,11 @@ const calls = [
   'https://daivan.github.io/badminton_training/images/badminton_shots/late_forehand.png',
   'https://daivan.github.io/badminton_training/images/badminton_shots/late_backhand.png',
 ];
-let callIndex = 0;
+
+const getRandomCall = () => {
+  const randomIndex = Math.floor(Math.random() * calls.length);
+  return calls[randomIndex];
+};
 
 const getRandomCallToAction = () => {
   const actions = ["Return a drop", "Return a clear"];
@@ -82,9 +86,8 @@ const startExercise = () => {
 
     startCountdown(() => {
       if (sessionCountdown.value <= 0) return;
-      currentCall.value = calls[callIndex];
+      currentCall.value = getRandomCall(); // Get a random call
       callToActionText.value = getRandomCallToAction(); // Set the random call to action text
-      callIndex = (callIndex + 1) % calls.length;
       exerciseLoopTimeout = setTimeout(exerciseLoop, 2000); // Display call for 2 seconds (2000 milliseconds)
     });
   };
