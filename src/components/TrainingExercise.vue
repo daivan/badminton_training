@@ -1,12 +1,16 @@
 <template>
   <div class="training-exercise">
-    <div v-if="currentCountdown > 0" class="progress-bar-container">
+    <div v-if="currentCountdown > 0 && !exerciseActive" class="progress-bar-container">
       <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
       <span class="progress-text">{{ formattedCurrentCountdown }}</span>
     </div>
     <template v-else-if="exerciseActive">
       <div class="call-to-action">{{ callToActionText }}</div>
       <img :src="currentCall" alt="Badminton Shot" class="call-image" />
+      <div v-if="currentCountdown > 0" class="progress-bar-container">
+        <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
+        <span class="progress-text">{{ formattedCurrentCountdown }}</span>
+      </div>
     </template>
     <h1 v-else>Training Complete!</h1>
     <div v-if="exerciseActive" class="session-countdown">Time Left: {{ formattedSessionCountdown }}</div>
@@ -94,12 +98,13 @@ const startExercise = () => {
   const exerciseLoop = () => {
     if (sessionCountdown.value <= 0) return;
 
-    startCountdown(() => {
-      if (sessionCountdown.value <= 0) return;
-      currentCall.value = getRandomCall(); // Get a random call
-      callToActionText.value = getRandomCallToAction(); // Set the random call to action text
-      exerciseLoopTimeout = setTimeout(exerciseLoop, 2000); // Display call for 2 seconds (2000 milliseconds)
-    });
+    currentCall.value = getRandomCall(); // Get a random call
+    callToActionText.value = getRandomCallToAction(); // Set the random call to action text
+
+    startCountdown(); // Start the progress bar countdown for this new image
+
+    // Schedule the next iteration of exerciseLoop to change the image after maxCountdown.value
+    exerciseLoopTimeout = setTimeout(exerciseLoop, maxCountdown.value);
   };
 
   exerciseLoop();
@@ -110,6 +115,10 @@ const goBack = () => {
 };
 
 onMounted(() => {
+  // Initial setup before the first countdown
+  currentCall.value = getRandomCall();
+  callToActionText.value = getRandomCallToAction();
+
   startCountdown(() => {
     exerciseActive.value = true;
     startExercise();
