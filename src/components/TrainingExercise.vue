@@ -1,6 +1,9 @@
 <template>
   <div class="training-exercise">
-    <h1 v-if="currentCountdown > 0" class="countdown">{{ formattedCurrentCountdown }}</h1>
+    <div v-if="currentCountdown > 0" class="progress-bar-container">
+      <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
+      <span class="progress-text">{{ formattedCurrentCountdown }}</span>
+    </div>
     <template v-else-if="exerciseActive">
       <div class="call-to-action">{{ callToActionText }}</div>
       <img :src="currentCall" alt="Badminton Shot" class="call-image" />
@@ -14,11 +17,18 @@
 <script setup>
 import { ref, onMounted, onUnmounted, defineProps, defineEmits, computed } from 'vue';
 
+const maxCountdown = ref(2000); // Max value for the countdown (in milliseconds)
+
 const formattedCurrentCountdown = computed(() => {
   const totalMilliseconds = Math.max(0, currentCountdown.value);
   const seconds = Math.floor(totalMilliseconds / 1000);
   const milliseconds = Math.floor((totalMilliseconds % 1000) / 10);
   return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
+});
+
+const progressBarWidth = computed(() => {
+  const percentage = (currentCountdown.value / maxCountdown.value) * 100;
+  return `${Math.max(0, percentage)}%`;
 });
 
 const props = defineProps({
@@ -30,7 +40,7 @@ const props = defineProps({
 
 const emit = defineEmits(['end-training']);
 
-const currentCountdown = ref(3000); // Countdown before exercise starts and before each call (in milliseconds)
+const currentCountdown = ref(maxCountdown.value); // Countdown before exercise starts and before each call (in milliseconds)
 const sessionCountdown = ref(0); // Total milliseconds remaining for the training session
 const currentCall = ref('');
 const callToActionText = ref('');
@@ -58,7 +68,7 @@ const getRandomCallToAction = () => {
 };
 
 const startCountdown = (callback) => {
-  currentCountdown.value = 2000; // Reset to 3 seconds in milliseconds
+  currentCountdown.value = maxCountdown.value; // Reset to maxCountdown value
   countdownInterval = setInterval(() => {
     currentCountdown.value -= 10; // Decrement by 10 milliseconds
     if (currentCountdown.value <= 0) { // Check if less than or equal to 0
@@ -152,8 +162,38 @@ h1 {
   margin-top: 20px;
 }
 
-.countdown {
-  color: #ffc107;
+.progress-bar-container {
+  width: 80%;
+  max-width: 500px;
+  height: 50px;
+  background-color: #333;
+  border-radius: 25px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 50px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4CAF50;
+  width: 0%;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.1s linear;
+}
+
+.progress-text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  line-height: 50px;
+  color: white;
+  font-size: 2em;
+  font-weight: bold;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .call-image {
