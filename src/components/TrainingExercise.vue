@@ -21,7 +21,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, defineProps, defineEmits, computed } from 'vue';
 
-const maxCountdown = ref(2000); // Max value for the countdown (in milliseconds)
+const maxCountdown = ref(0); // Will be set in onMounted
 
 const formattedCurrentCountdown = computed(() => {
   const totalMilliseconds = Math.max(0, currentCountdown.value);
@@ -40,11 +40,15 @@ const props = defineProps({
     type: Number,
     required: true,
   },
+  seconds: {
+    type: Number,
+    required: true,
+  },
 });
 
 const emit = defineEmits(['end-training']);
 
-const currentCountdown = ref(maxCountdown.value); // Countdown before exercise starts and before each call (in milliseconds)
+const currentCountdown = ref(0); // Countdown before exercise starts and before each call (in milliseconds)
 const sessionCountdown = ref(0); // Total milliseconds remaining for the training session
 const currentCall = ref('');
 const callToActionText = ref('');
@@ -72,7 +76,7 @@ const getRandomCallToAction = () => {
 };
 
 const startCountdown = (callback) => {
-  currentCountdown.value = maxCountdown.value; // Reset to maxCountdown value
+  currentCountdown.value = props.seconds * 1000; // Reset to maxCountdown value
   countdownInterval = setInterval(() => {
     currentCountdown.value -= 10; // Decrement by 10 milliseconds
     if (currentCountdown.value <= 0) { // Check if less than or equal to 0
@@ -104,7 +108,7 @@ const startExercise = () => {
     startCountdown(); // Start the progress bar countdown for this new image
 
     // Schedule the next iteration of exerciseLoop to change the image after maxCountdown.value
-    exerciseLoopTimeout = setTimeout(exerciseLoop, maxCountdown.value);
+    exerciseLoopTimeout = setTimeout(exerciseLoop, props.seconds * 1000);
   };
 
   exerciseLoop();
@@ -116,8 +120,8 @@ const goBack = () => {
 
 onMounted(() => {
   // Initial setup before the first countdown
-  currentCall.value = getRandomCall();
-  callToActionText.value = getRandomCallToAction();
+  maxCountdown.value = props.seconds * 1000; // Set maxCountdown based on props.seconds
+  currentCountdown.value = maxCountdown.value; // Initialize currentCountdown with the max value
 
   startCountdown(() => {
     exerciseActive.value = true;

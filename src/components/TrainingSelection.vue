@@ -7,6 +7,12 @@
         <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
       </select>
     </div>
+    <div class="input-group">
+      <label for="seconds">Seconds per image:</label>
+      <select id="seconds" v-model="selectedSeconds">
+        <option v-for="n in 10" :key="n" :value="n">{{ n }}</option>
+      </select>
+    </div>
     <button @click="startTraining">Start Training</button>
     <button @click="toggleDarkMode" class="dark-mode-toggle">
       {{ darkMode ? 'Light Mode' : 'Dark Mode' }}
@@ -18,11 +24,12 @@
 import { ref, defineEmits, onMounted } from 'vue';
 
 const selectedDuration = ref(1);
+const selectedSeconds = ref(3); // Default to 3 seconds
 const emit = defineEmits(['start-training']);
 const darkMode = ref(false);
 
 const startTraining = () => {
-  emit('start-training', selectedDuration.value);
+  emit('start-training', selectedDuration.value, selectedSeconds.value);
 };
 
 const toggleDarkMode = () => {

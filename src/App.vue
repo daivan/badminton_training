@@ -5,9 +5,11 @@ import TrainingExercise from './components/TrainingExercise.vue';
 
 const trainingStarted = ref(false);
 const trainingDuration = ref(0);
+const trainingSeconds = ref(0);
 
-const startTraining = (duration) => {
+const startTraining = (duration, seconds) => {
   trainingDuration.value = duration;
+  trainingSeconds.value = seconds;
   trainingStarted.value = true;
 };
 
@@ -20,7 +22,7 @@ const endTraining = () => {
 <template>
   <div id="app">
     <TrainingSelection v-if="!trainingStarted" @start-training="startTraining" />
-    <TrainingExercise v-else :duration="trainingDuration" @end-training="endTraining" />
+    <TrainingExercise v-else :duration="trainingDuration" :seconds="trainingSeconds" @end-training="endTraining" />
   </div>
 </template>
 
