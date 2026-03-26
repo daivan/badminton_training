@@ -18,15 +18,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'docs', // Output to the docs directory for GitHub Pages
-    assetsInlineLimit: 1000000, // Inline all assets
-    rollupOptions: {
-      output: {
-        inlineDynamicImports: true, // Inline dynamic imports
-        entryFileNames: 'assets/[name].js', // Keep original entry file names
-        chunkFileNames: 'assets/[name].js', // Keep original chunk file names
-        assetFileNames: 'assets/[name].[ext]', // Keep original asset file names
-      },
-    },
-    cssCodeSplit: false, // Ensure CSS is inlined
+    // Removed: assetsInlineLimit: 1000000,
+    // Removed: rollupOptions.output.assetFileNames,
+    // Default behavior for public directory assets should now be preserved.
   },
 })
