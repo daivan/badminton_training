@@ -10,7 +10,7 @@ export default defineConfig({
     vue(),
     vueDevTools(),
   ],
-  base: './', // Set base to relative path for GitHub Pages
+  base: '/badminton_training/', // Updated to reflect the subdirectory on GitHub Pages
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -18,8 +18,14 @@ export default defineConfig({
   },
   build: {
     outDir: 'docs', // Output to the docs directory for GitHub Pages
-    // Removed: assetsInlineLimit: 1000000,
-    // Removed: rollupOptions.output.assetFileNames,
-    // Default behavior for public directory assets should now be preserved.
+    rollupOptions: {
+      output: {
+        // Ensure JS files go into 'assets/' folder with specific naming
+        entryFileNames: 'assets/[name].js', // Example: index.js -> assets/index.js
+        chunkFileNames: 'assets/[name].js', // Example: SomeChunk.js -> assets/SomeChunk.js
+        assetFileNames: 'assets/[name].[ext]', // Example: style.css -> assets/style.css
+        inlineDynamicImports: true, // Keep dynamic imports inlined
+      },
+    },
   },
 })
