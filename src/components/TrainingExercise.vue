@@ -1,146 +1,75 @@
 <template>
   <div class="training-exercise">
-    <div v-if="currentCountdown > 0 && !exerciseActive" class="progress-bar-container">
-      <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
-      <span class="progress-text">{{ formattedCurrentCountdown }}</span>
-    </div>
-    <template v-else-if="exerciseActive">
-      <div class="call-to-action">{{ callToActionText }}</div>
-      <img :src="currentCall" alt="Badminton Shot" class="call-image" />
-      <div v-if="currentCountdown > 0" class="progress-bar-container">
+    <!-- Prep Phase -->
+    <div v-if="!exerciseActive && !isFinished" class="prep-phase">
+      <h2>Get Ready!</h2>
+      <div class="large-countdown">{{ formatTime(currentCountdown).short }}</div>
+      <div class="progress-bar-container">
         <div class="progress-bar" :style="{ width: progressBarWidth }"></div>
-        <span class="progress-text">{{ formattedCurrentCountdown }}</span>
+      </div>
+    </div>
+
+    <!-- Active Phase -->
+    <template v-else-if="exerciseActive">
+      <div class="shot-info">
+        <div class="action-text">{{ currentAction }}</div>
+        <img v-if="currentCall" :src="currentCall.src" :alt="currentCall.label" class="call-image" />
+        <div class="shot-label">{{ currentCall?.label }}</div>
+      </div>
+
+      <div class="timers">
+        <div class="timer-card">
+          <label>Next Shot</label>
+          <div class="time">{{ formatTime(currentCountdown).short }}</div>
+          <div class="mini-progress">
+            <div class="bar" :style="{ width: progressBarWidth }"></div>
+          </div>
+        </div>
+        <div class="timer-card">
+          <label>Remaining</label>
+          <div class="time">{{ formatTime(sessionCountdown).full }}</div>
+        </div>
       </div>
     </template>
-    <h1 v-else>Training Complete!</h1>
-    <div v-if="exerciseActive" class="session-countdown">Time Left: {{ formattedSessionCountdown }}</div>
-    <button v-if="!exerciseActive && currentCountdown === 0" @click="goBack">Go Back</button>
+
+    <!-- Finished Phase -->
+    <div v-else-if="isFinished" class="finish-phase">
+      <h1>Well Done!</h1>
+      <p>Training session completed.</p>
+      <button class="back-btn" @click="emit('end-training')">Return to Menu</button>
+    </div>
+
+    <button v-if="exerciseActive" class="stop-btn" @click="emit('end-training')">Stop</button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, defineProps, defineEmits, computed } from 'vue';
+import { onMounted, computed } from 'vue';
+import { useTrainingEngine } from '../composables/useTrainingEngine';
+import { useSettings } from '../composables/useSettings';
 
-const maxCountdown = ref(0); // Will be set in onMounted
-
-const formattedCurrentCountdown = computed(() => {
-  const totalMilliseconds = Math.max(0, currentCountdown.value);
-  const seconds = Math.floor(totalMilliseconds / 1000);
-  const milliseconds = Math.floor((totalMilliseconds % 1000) / 10);
-  return `${seconds}.${milliseconds.toString().padStart(2, '0')}`;
-});
+const emit = defineEmits(['end-training']);
+const { selectedDuration, selectedInterval } = useSettings();
+const {
+  currentCountdown,
+  sessionCountdown,
+  currentCall,
+  currentAction,
+  exerciseActive,
+  isFinished,
+  maxInterval,
+  startTraining,
+  formatTime,
+} = useTrainingEngine();
 
 const progressBarWidth = computed(() => {
-  const percentage = (currentCountdown.value / maxCountdown.value) * 100;
+  const total = exerciseActive.value ? maxInterval.value : 3000; // 3s prep
+  const percentage = (currentCountdown.value / total) * 100;
   return `${Math.max(0, percentage)}%`;
 });
 
-const props = defineProps({
-  duration: {
-    type: Number,
-    required: true,
-  },
-  seconds: {
-    type: Number,
-    required: true,
-  },
-});
-
-const emit = defineEmits(['end-training']);
-
-const currentCountdown = ref(0); // Countdown before exercise starts and before each call (in milliseconds)
-const sessionCountdown = ref(0); // Total milliseconds remaining for the training session
-const currentCall = ref('');
-const callToActionText = ref('');
-const exerciseActive = ref(false);
-let countdownInterval = null; // Generic countdown interval
-let sessionCountdownInterval = null;
-let exerciseLoopTimeout = null; // Timeout for the main exercise loop
-
-const calls = [
-  'https://daivan.github.io/badminton_training/images/badminton_shots/short_forehand.png',
-  'https://daivan.github.io/badminton_training/images/badminton_shots/short_backhand.png',
-  'https://daivan.github.io/badminton_training/images/badminton_shots/late_forehand.png',
-  'https://daivan.github.io/badminton_training/images/badminton_shots/late_backhand.png',
-];
-
-const getRandomCall = () => {
-  const randomIndex = Math.floor(Math.random() * calls.length);
-  return calls[randomIndex];
-};
-
-const getRandomCallToAction = () => {
-  const actions = ["Return a drop", "Return a clear"];
-  const randomIndex = Math.floor(Math.random() * actions.length);
-  return actions[randomIndex];
-};
-
-const startCountdown = (callback) => {
-  currentCountdown.value = props.seconds * 1000; // Reset to maxCountdown value
-  countdownInterval = setInterval(() => {
-    currentCountdown.value -= 10; // Decrement by 10 milliseconds
-    if (currentCountdown.value <= 0) { // Check if less than or equal to 0
-      clearInterval(countdownInterval);
-      if (callback) callback();
-    }
-  }, 10); // Update every 10 milliseconds
-};
-
-const startExercise = () => {
-  sessionCountdown.value = props.duration * 60 * 1000; // Initialize session countdown in milliseconds
-
-  sessionCountdownInterval = setInterval(() => {
-    sessionCountdown.value -= 10; // Decrement by 10 milliseconds
-    if (sessionCountdown.value <= 0) {
-      clearInterval(sessionCountdownInterval);
-      clearTimeout(exerciseLoopTimeout);
-      exerciseActive.value = false;
-      emit('end-training');
-    }
-  }, 10); // Update every 10 milliseconds
-
-  const exerciseLoop = () => {
-    if (sessionCountdown.value <= 0) return;
-
-    currentCall.value = getRandomCall(); // Get a random call
-    callToActionText.value = getRandomCallToAction(); // Set the random call to action text
-
-    startCountdown(); // Start the progress bar countdown for this new image
-
-    // Schedule the next iteration of exerciseLoop to change the image after maxCountdown.value
-    exerciseLoopTimeout = setTimeout(exerciseLoop, props.seconds * 1000);
-  };
-
-  exerciseLoop();
-};
-
-const goBack = () => {
-  emit('end-training');
-};
-
 onMounted(() => {
-  // Initial setup before the first countdown
-  maxCountdown.value = props.seconds * 1000; // Set maxCountdown based on props.seconds
-  currentCountdown.value = maxCountdown.value; // Initialize currentCountdown with the max value
-
-  startCountdown(() => {
-    exerciseActive.value = true;
-    startExercise();
-  });
-});
-
-onUnmounted(() => {
-  clearInterval(countdownInterval);
-  clearInterval(sessionCountdownInterval);
-  clearTimeout(exerciseLoopTimeout);
-});
-const formattedSessionCountdown = computed(() => {
-  const totalMilliseconds = Math.max(0, sessionCountdown.value); // Ensure no negative values
-  const minutes = Math.floor(totalMilliseconds / (60 * 1000));
-  const seconds = Math.floor((totalMilliseconds % (60 * 1000)) / 1000);
-  const milliseconds = Math.floor((totalMilliseconds % 1000) / 10); // Get two digits for milliseconds
-
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`;
+  startTraining(selectedDuration.value, selectedInterval.value);
 });
 </script>
 
@@ -150,91 +79,135 @@ const formattedSessionCountdown = computed(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
-  font-family: 'Arial', sans-serif;
-  background-color: #282c34;
+  min-height: 100vh;
+  background-color: #1a1a1a;
   color: white;
+  padding: 20px;
   text-align: center;
 }
 
-h1 {
-  font-size: 5em;
-  margin-bottom: 50px;
-}
-
-.call-to-action {
+.prep-phase h2 {
   font-size: 3em;
-  color: #4CAF50; /* A nice green color */
+  color: #ffc107;
   margin-bottom: 20px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-.session-countdown {
-  font-size: 2em;
-  color: #ffc107;
-  margin-top: 20px;
+.large-countdown {
+  font-size: 8em;
+  font-weight: 800;
+  font-family: monospace;
+}
+
+.shot-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.action-text {
+  font-size: 3.5em;
+  font-weight: 800;
+  color: #4CAF50;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+
+.call-image {
+  max-width: 90%;
+  max-height: 50vh;
+  object-fit: contain;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.shot-label {
+  font-size: 1.5em;
+  opacity: 0.8;
+}
+
+.timers {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 40px;
+  width: 100%;
+  max-width: 600px;
+}
+
+.timer-card {
+  flex: 1;
+  background: rgba(255,255,255,0.1);
+  padding: 15px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+}
+
+.timer-card label {
+  font-size: 0.8em;
+  text-transform: uppercase;
+  color: #adb5bd;
+}
+
+.timer-card .time {
+  font-size: 2.5em;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+.mini-progress {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.mini-progress .bar {
+  height: 100%;
+  background: #4CAF50;
+  transition: width 0.05s linear;
 }
 
 .progress-bar-container {
-  width: 80%;
-  max-width: 500px;
-  height: 50px;
-  background-color: #333;
-  border-radius: 25px;
+  width: 300px;
+  height: 10px;
+  background: #333;
+  border-radius: 5px;
+  margin-top: 20px;
   overflow: hidden;
-  position: relative;
-  margin-bottom: 50px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .progress-bar {
   height: 100%;
-  background-color: #4CAF50;
-  width: 0%;
-  border-radius: 25px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: width 0.1s linear;
+  background: #ffc107;
+  transition: width 0.05s linear;
 }
 
-.progress-text {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  line-height: 50px;
-  color: white;
-  font-size: 2em;
-  font-weight: bold;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+.finish-phase h1 {
+  font-size: 4em;
+  color: #4CAF50;
 }
 
-.call-image {
-  max-width: 80%;
-  max-height: 80vh;
-  object-fit: contain;
-}
-
-button {
-  padding: 12px 25px;
-  font-size: 1.3em;
-  color: white;
-  background-color: #007bff;
+.back-btn, .stop-btn {
+  padding: 12px 30px;
+  font-size: 1.2em;
+  border-radius: 10px;
   border: none;
-  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
-button:hover {
-  background-color: #0056b3;
-  transform: translateY(-2px);
+.back-btn { background: #007bff; color: white; }
+.stop-btn { 
+  background: rgba(255,255,255,0.1); 
+  color: #ff4d4d; 
+  margin-top: 20px;
 }
 
-button:active {
-  background-color: #004085;
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+.stop-btn:hover { background: rgba(255,77,77,0.2); }
 </style>
